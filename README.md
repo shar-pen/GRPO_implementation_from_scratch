@@ -24,10 +24,11 @@ pip install transformers datasets wandb
 ### Run code
 
 ```bash
-bash script/run_train.sh
+cd src
+bash run_train.sh
 ```
 
-This will create a log file as `script/run_train.log`. 
+This will create a log file as `run_train.log`. 
 
 I only use partial data of `gsm8k` dataset (1024 QAs), and training on 4090 takes 2h approximately. 
 
