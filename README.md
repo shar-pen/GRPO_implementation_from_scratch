@@ -61,7 +61,7 @@ GRPO 起源于 [DeepSeekMath](https://arxiv.org/abs/2402.03300), 是一种高效
 
 
 $$
-\mathcal{J}_{\text{PPO}}(\theta) = \mathbb{E}_{q \sim D,\ o \sim \pi_{\theta_{\text{old}}}(\cdot|q)} \left[ \min \left( r(\theta) \hat{A}_t,\ \text{clip} \left( r(\theta),\ 1 - \varepsilon,\ 1 + \varepsilon \right) \hat{A}_t \right) \right]
+\mathcal{J}\_{\text{PPO}}(\theta) = \mathbb{E}\_{q \sim D,\ o \sim \pi_{\theta_{\text{old}}}(\cdot|q)} \left[ \min \left( r(\theta) \hat{A}\_t,\ \text{clip} \left( r(\theta),\ 1 - \varepsilon,\ 1 + \varepsilon \right) \hat{A}\_t \right) \right]
 $$
 
 其中：
@@ -70,7 +70,7 @@ r(\theta) = \frac{\pi_{\theta}(o_t | q, o_{<t})}{\pi_{\theta_{\text{old}}}(o_t |
 $$
 
 - $r_t(\theta)$ 是当前策略与旧策略的比值，注意 r 代表 ratio 而不是 reward；
-- $\hat{A}_t$​ 是估计出的优势函数（Advantage），表示当前动作相对平均策略的好坏；
+- $\hat{A}\_t$​ 是估计出的优势函数（Advantage），表示当前动作相对平均策略的好坏；
 - $\epsilon$ 是超参数，控制允许的策略变动范围（如 0.2）；
 - `clip` 操作将 $r_t$ 限制在 $[1-\epsilon, 1+\epsilon]$；
 - 取 `min` 是为了在超过 clip 区间时使用“惩罚值”，防止过度优化。
@@ -79,14 +79,14 @@ $$
 
 clip 对梯度更新的影响是
 
-| Advantage 符号 $\hat{A}_t$ | $r_t$ 区间                                | 原始项 $r_t \hat{A}_t$ | clip项 $\text{clip}(r_t, 1-\epsilon, 1+\epsilon) \hat{A}_t$ | 实际值 = min(...)         | 是否发生clip限制 |
+| Advantage 符号 $\hat{A}\_t$ | $r_t$ 区间                                | 原始项 $r_t \hat{A}\_t$ | clip项 $\text{clip}(r_t, 1-\epsilon, 1+\epsilon) \hat{A}\_t$ | 实际值 = min(...)         | 是否发生clip限制 |
 | -------------------------- | ----------------------------------------- | ---------------------- | ----------------------------------------------------------- | ------------------------- | ---------------- |
-| $\hat{A}_t > 0$            | $r_t < 1 - \epsilon$                      | $r_t \hat{A}_t$        | $(1 - \epsilon)\hat{A}_t$                                   | $r_t \hat{A}_t$           | N                |
-| $\hat{A}_t > 0$            | $1 - \epsilon \leq r_t \leq 1 + \epsilon$ | $r_t \hat{A}_t$        | $r_t \hat{A}_t$                                             | $r_t \hat{A}_t$           | N                |
-| $\hat{A}_t > 0$            | $r_t > 1 + \epsilon$                      | $r_t \hat{A}_t$        | $(1 + \epsilon)\hat{A}_t$                                   | $(1 + \epsilon)\hat{A}_t$ | Y                |
-| $\hat{A}_t < 0$            | $r_t < 1 - \epsilon$                      | $r_t \hat{A}_t$        | $(1 - \epsilon)\hat{A}_t$                                   | $(1 - \epsilon)\hat{A}_t$ | Y                |
-| $\hat{A}_t < 0$            | $1 - \epsilon \leq r_t \leq 1 + \epsilon$ | $r_t \hat{A}_t$        | $r_t \hat{A}_t$                                             | $r_t \hat{A}_t$           | N                |
-| $\hat{A}_t < 0$            | $r_t > 1 + \epsilon$                      | $r_t \hat{A}_t$        | $(1 + \epsilon)\hat{A}_t$                                   | $r_t \hat{A}_t$           | N                |
+| $\hat{A}\_t > 0$            | $r_t < 1 - \epsilon$                      | $r_t \hat{A}\_t$        | $(1 - \epsilon)\hat{A}\_t$                                   | $r_t \hat{A}\_t$           | N                |
+| $\hat{A}\_t > 0$            | $1 - \epsilon \leq r_t \leq 1 + \epsilon$ | $r_t \hat{A}\_t$        | $r_t \hat{A}\_t$                                             | $r_t \hat{A}\_t$           | N                |
+| $\hat{A}\_t > 0$            | $r_t > 1 + \epsilon$                      | $r_t \hat{A}\_t$        | $(1 + \epsilon)\hat{A}\_t$                                   | $(1 + \epsilon)\hat{A}\_t$ | Y                |
+| $\hat{A}\_t < 0$            | $r_t < 1 - \epsilon$                      | $r_t \hat{A}\_t$        | $(1 - \epsilon)\hat{A}\_t$                                   | $(1 - \epsilon)\hat{A}\_t$ | Y                |
+| $\hat{A}\_t < 0$            | $1 - \epsilon \leq r_t \leq 1 + \epsilon$ | $r_t \hat{A}\_t$        | $r_t \hat{A}\_t$                                             | $r_t \hat{A}\_t$           | N                |
+| $\hat{A}\_t < 0$            | $r_t > 1 + \epsilon$                      | $r_t \hat{A}\_t$        | $(1 + \epsilon)\hat{A}\_t$                                   | $r_t \hat{A}\_t$           | N                |
 
 **目标是抑制策略比例变化 $r_t$ 太大或太小导致的梯度爆炸或崩塌**。
 
@@ -103,24 +103,24 @@ clip 对梯度更新的影响是
 
 #### objective
 
-与 PPO 相比，GRPO 消除了价值函数，并以群体相对方式估计优势。对于特定的问题-答案对 (q, a)，行为策略 $\pi_{\text{old}}$ 采样一组 G 个独立响应 $\{o_i\}_{i=1}^G$。然后，通过归一化群体级奖励 $\{R_i\}_{i=1}^G$ 计算第 $i$ 个响应的优势：
+与 PPO 相比，GRPO 消除了价值函数，并以群体相对方式估计优势。对于特定的问题-答案对 (q, a)，行为策略 $\pi_{\text{old}}$ 采样一组 G 个独立响应 $\{o_i\}\_{i=1}^G$。然后，通过归一化群体级奖励 $\{R_i\}\_{i=1}^G$ 计算第 $i$ 个响应的优势：
 $$
-\hat{A}_{i,t} = \frac{r_i - \text{mean}\left(\{R_i\}_{i=1}^G\right)}{\text{std}\left(\{R_i\}_{i=1}^G\right)}.
+\hat{A}\_{i,t} = \frac{r_i - \text{mean}\left(\{R_i\}\_{i=1}^G\right)}{\text{std}\left(\{R_i\}\_{i=1}^G\right)}.
 $$
 与 PPO 类似，GRPO在原始目标的基础上加上了 KL 散度惩罚项 （**限制当前策略与参考策略之间的差异，不让策略变化太激进。**PPO是在 reward 里加入KL 重复项，GRPO reward 计算不同，因此直接额外加入 KL 项）
 
 从图片中提取的公式如下：
 $$
-\mathcal{J}_{\text{GRPO}}(\theta) = \mathbb{E}_{(q,a) \sim \mathcal{D}, \{o_i\}_{i=1}^G \sim \pi_{\theta_{\text{old}}}(\cdot \mid q)} \Bigg[ \frac{1}{G} \sum_{i=1}^G \frac{1}{|o_i|} \sum_{t=1}^{|o_i|} \Big( \min \big( r_{i,t}(\theta) \hat{A}_{i,t}, \, \text{clip}( r_{i,t}(\theta), 1-\varepsilon, 1+\varepsilon ) \hat{A}_{i,t} \big) - \beta D_{\mathrm{KL}}(\pi_\theta \| \pi_{\text{ref}}) \Big) \Bigg].
+\mathcal{J}\_{\text{GRPO}}(\theta) = \mathbb{E}\_{(q,a) \sim \mathcal{D}, \{o_i\}\_{i=1}^G \sim \pi_{\theta_{\text{old}}}(\cdot \mid q)} \Bigg[ \frac{1}{G} \sum_{i=1}^G \frac{1}{|o_i|} \sum_{t=1}^{|o_i|} \Big( \min \big( r_{i,t}(\theta) \hat{A}\_{i,t}, \, \text{clip}( r_{i,t}(\theta), 1-\varepsilon, 1+\varepsilon ) \hat{A}\_{i,t} \big) - \beta D_{\mathrm{KL}}(\pi_\theta \| \pi_{\text{ref}}) \Big) \Bigg].
 $$
 
 - $(q,a) \sim \mathcal{D}$：问题-答案对来自数据集。
-- $\{o_i\}_{i=1}^G$：从旧策略 $\pi_{\text{old}}$ 生成的 $G$ 个候选输出（rollouts）。
+- $\{o_i\}\_{i=1}^G$：从旧策略 $\pi_{\text{old}}$ 生成的 $G$ 个候选输出（rollouts）。
 - $|o_i|$：第 $i$ 个输出的 token 长度。
 - $r(\theta) = \pi_{\theta}(o_t | q, o_{<t}) / \pi_{\theta_{\text{old}}}(o_t | q, o_{<t})$ 
 
 $$
-\mathbb{D}_{\mathrm{KL}} \left[ \pi_\theta \,\|\, \pi_{\text{ref}} \right] = \frac{ \pi_{\text{ref}}(o_{i,t} \mid q, o_{i,<t}) }{ \pi_\theta(o_{i,t} \mid q, o_{i,<t}) } - \log \frac{ \pi_{\text{ref}}(o_{i,t} \mid q, o_{i,<t}) }{ \pi_\theta(o_{i,t} \mid q, o_{i,<t}) } - 1
+\mathbb{D}\_{\mathrm{KL}} \left[ \pi_\theta \,\|\, \pi_{\text{ref}} \right] = \frac{ \pi_{\text{ref}}(o_{i,t} \mid q, o_{i,<t}) }{ \pi_\theta(o_{i,t} \mid q, o_{i,<t}) } - \log \frac{ \pi_{\text{ref}}(o_{i,t} \mid q, o_{i,<t}) }{ \pi_\theta(o_{i,t} \mid q, o_{i,<t}) } - 1
 $$
 
 值得注意的是，GRPO 在 **sample-level 样本级别计算目标**。具体来说，GRPO 首先 sample 内 loss先平均化，再 sample 间 loss 平均化。这一点在 DAPO 里会改变。
