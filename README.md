@@ -39,7 +39,14 @@ cd src_grpo_trainer
 bash train.sh
 ```
 
+## 相关教程
 
+- GRPO & DAPO 论文解读： https://shar-pen.github.io/2025/07/31/Reinforcement_learning/GRPO&DAPO_paper/
+- GRPO 实现讲解： https://shar-pen.github.io/2025/08/02/Reinforcement_learning/GRPO_implementation_from_scratch/
+- GRPO-trainer-HF 长度奖励的文本压缩任务： https://shar-pen.github.io/2025/07/31/Reinforcement_learning/GRPO_length_reward/
+- GRPO trainer 训练推理模型： https://shar-pen.github.io/2025/08/02/Reinforcement_learning/GRPO_trainer_reasoning_model/
+- Direct Preference Optimization (DPO)： https://shar-pen.github.io/2025/06/24/Reinforcement_learning/DPO/
+- DPO trainer - by trl： https://shar-pen.github.io/2025/07/16/Reinforcement_learning/DPO_trainer_exp/
 
 
 
